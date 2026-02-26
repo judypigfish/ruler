@@ -1,134 +1,979 @@
-﻿<Window x:Class="ruler.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="螢幕半透明尺" Height="150" Width="600"
-        WindowStyle="None" 
-        AllowsTransparency="True" 
-        
-        Background= "Transparent"
-        
-        Topmost="True" 
-        ResizeMode="CanResize"
-        Icon="JudyRuler.ico"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        MouseMove="Window_MouseMove" 
-        MouseLeftButtonUp="Window_MouseLeftButtonUp"
-        SizeChanged="Window_SizeChanged"
-        KeyDown="Window_KeyDown">
+﻿<Window
+
+    x:Class="ruler.MainWindow"
+
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+    Title="螢幕半透明尺"
+
+    Width="600"
+
+    Height="150"
+
+    AllowsTransparency="True"
+
+    Background="Transparent"
+
+    Icon="JudyRuler.ico"
+
+    KeyDown="Window_KeyDown"
+
+    MouseLeftButtonDown="Window_MouseLeftButtonDown"
+
+    MouseLeftButtonUp="Window_MouseLeftButtonUp"
+
+    MouseMove="Window_MouseMove"
+
+    ResizeMode="CanResize"
+
+    SizeChanged="Window_SizeChanged"
+
+    Topmost="True"
+
+    WindowStyle="None">
+
+
+
+
+
+
 
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="0" ResizeBorderThickness="8" GlassFrameThickness="0" CornerRadius="0"/>
+
+
+
+        <WindowChrome
+
+            CaptionHeight="0"
+
+            CornerRadius="0"
+
+            GlassFrameThickness="0"
+
+            ResizeBorderThickness="8" />
+
+
+
     </WindowChrome.WindowChrome>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <Window.ContextMenu>
+
+
+
         <ContextMenu>
-            <MenuItem Header="最上層顯示" IsCheckable="True" IsChecked="False" Click="MenuTopmost_Click"/>
+
+
+
+            <MenuItem
+
+                Click="MenuTopmost_Click"
+
+                Header="最上層顯示"
+
+                IsCheckable="True"
+
+                IsChecked="False" />
+
+
+
             <MenuItem Header="度量比率">
-                <MenuItem x:Name="MenuRatioToggle" Header="啟用邏輯比例" IsCheckable="True" IsChecked="False" Click="MenuRatioToggle_Click"/>
+
+
+
+                <MenuItem
+
+                    x:Name="MenuRatioToggle"
+
+                    Click="MenuRatioToggle_Click"
+
+                    Header="啟用邏輯比例"
+
+                    IsCheckable="True"
+
+                    IsChecked="False" />
+
+
+
+
+
+
+
                 <Separator />
-                <MenuItem Header="設定度量比率..." Click="SetRatio_Click"/>
+
+
+
+
+
+
+
+                <MenuItem Click="SetRatio_Click" Header="設定度量比率..." />
+
+
+
             </MenuItem>
+
+
+
+
+
+
+
+
+
+
 
             <MenuItem Header="量度單位">
-                <MenuItem Header="像素 (px)" IsCheckable="True" IsChecked="True" Click="MenuUnit_Click"/>
-                <MenuItem Header="公厘 (mm)" IsCheckable="True" Click="MenuUnit_Click"/>
+
+
+
+                <MenuItem
+
+                    Click="MenuUnit_Click"
+
+                    Header="像素 (px)"
+
+                    IsCheckable="True"
+
+                    IsChecked="True" />
+
+
+
+                <MenuItem
+
+                    Click="MenuUnit_Click"
+
+                    Header="公厘 (mm)"
+
+                    IsCheckable="True" />
+
+
+
             </MenuItem>
+
+
+
+
+
+
 
             <MenuItem Header="位置">
-                <MenuItem x:Name="MenuPosLeft" Header="左" IsCheckable="True" Click="MenuPosition_Click"/>
-                <MenuItem x:Name="MenuPosTop" Header="上" IsCheckable="True" IsChecked="True" Click="MenuPosition_Click"/>
-                <MenuItem x:Name="MenuPosRight" Header="右" IsCheckable="True" Click="MenuPosition_Click"/>
-                <MenuItem x:Name="MenuPosBottom" Header="下" IsCheckable="True" Click="MenuPosition_Click"/>
+
+
+
+                <MenuItem
+
+                    x:Name="MenuPosLeft"
+
+                    Click="MenuPosition_Click"
+
+                    Header="左"
+
+                    IsCheckable="True" />
+
+
+
+                <MenuItem
+
+                    x:Name="MenuPosTop"
+
+                    Click="MenuPosition_Click"
+
+                    Header="上"
+
+                    IsCheckable="True"
+
+                    IsChecked="True" />
+
+
+
+                <MenuItem
+
+                    x:Name="MenuPosRight"
+
+                    Click="MenuPosition_Click"
+
+                    Header="右"
+
+                    IsCheckable="True" />
+
+
+
+                <MenuItem
+
+                    x:Name="MenuPosBottom"
+
+                    Click="MenuPosition_Click"
+
+                    Header="下"
+
+                    IsCheckable="True" />
+
+
+
             </MenuItem>
+
+
+
+
+
+
 
             <MenuItem Header="透明度">
-                <MenuItem Header="10%" IsCheckable="True" Click="MenuOpacity_Click"/>
-                <MenuItem Header="20%" IsCheckable="True" Click="MenuOpacity_Click"/>
-                <MenuItem Header="30%" IsCheckable="True" IsChecked="True" Click="MenuOpacity_Click"/>
-                <MenuItem Header="40%" IsCheckable="True" Click="MenuOpacity_Click"/>
-                <MenuItem Header="50%" IsCheckable="True" Click="MenuOpacity_Click"/>
-                <MenuItem Header="60%" IsCheckable="True" Click="MenuOpacity_Click"/>
+
+
+
+                <MenuItem
+
+                    Click="MenuOpacity_Click"
+
+                    Header="10%"
+
+                    IsCheckable="True" />
+
+
+
+                <MenuItem
+
+                    Click="MenuOpacity_Click"
+
+                    Header="20%"
+
+                    IsCheckable="True" />
+
+
+
+                <MenuItem
+
+                    Click="MenuOpacity_Click"
+
+                    Header="30%"
+
+                    IsCheckable="True"
+
+                    IsChecked="True" />
+
+
+
+                <MenuItem
+
+                    Click="MenuOpacity_Click"
+
+                    Header="40%"
+
+                    IsCheckable="True" />
+
+
+
+                <MenuItem
+
+                    Click="MenuOpacity_Click"
+
+                    Header="50%"
+
+                    IsCheckable="True" />
+
+
+
+                <MenuItem
+
+                    Click="MenuOpacity_Click"
+
+                    Header="60%"
+
+                    IsCheckable="True" />
+
+
+
             </MenuItem>
 
+
+
+
+
+
+
             <Separator />
-            <MenuItem Header="關於" Click="MenuAbout_Click"/>
-            <MenuItem Header="離開" Click="MenuExit_Click"/>
+
+
+
+
+
+
+
+            <MenuItem Click="MenuAbout_Click" Header="關於" />
+
+
+
+            <MenuItem Click="MenuExit_Click" Header="離開" />
+
+
+
         </ContextMenu>
+
+
+
     </Window.ContextMenu>
 
-    <Grid x:Name="RulerBody" 
-          Background="#AAFFFFFF" 
-          HorizontalAlignment="Stretch" 
-          VerticalAlignment="Stretch"
-          ClipToBounds="False">
 
-        <Canvas x:Name="RulerCanvas" Margin="0,0,0,0" ClipToBounds="False"/>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+
+
+
+
+    <Grid
+
+        x:Name="RulerBody"
+
+        HorizontalAlignment="Stretch"
+
+        VerticalAlignment="Stretch"
+
+        Background="#AAFFFFFF"
+
+        ClipToBounds="False"
+
+        RenderTransformOrigin="0.5,0.5">
+
+
+
+
+
+
+
+        <Grid.RenderTransform>
+
+
+
+            <RotateTransform x:Name="windowRotation" Angle="0" />
+
+
+
+        </Grid.RenderTransform>
+
+
+
+        <Canvas
+
+            x:Name="RulerCanvas"
+
+            Width="600"
+
+            Height="150"
+
+            Margin="0,0,0,0"
+
+            ClipToBounds="False" />
+
+
+
+        <StackPanel
+
+            HorizontalAlignment="Center"
+
+            VerticalAlignment="Center"
+
+            IsHitTestVisible="False">
+
+            <Grid
+
+                HorizontalAlignment="Center"
+
+                VerticalAlignment="Center"
+
+                IsHitTestVisible="False">
+
+
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="22"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="Auto" />
+
+                    <ColumnDefinition Width="22" />
+
+                    <ColumnDefinition Width="Auto" />
+
+                    <ColumnDefinition Width="20" />
+
+                    <ColumnDefinition Width="Auto" />
+
+                    <ColumnDefinition Width="Auto" />
+
                 </Grid.ColumnDefinitions>
 
+
+
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="Auto" />
+
+                    <RowDefinition Height="Auto" />
+
+                    <RowDefinition Height="Auto" />
+
+                    <RowDefinition Height="Auto" />
+
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="寬度(" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="W" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
-                <TextBlock Grid.Row="0" Grid.Column="2" Text=")" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left"/>
-                <TextBlock Grid.Row="0" Grid.Column="3" Text=":" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
 
-                <TextBlock Grid.Row="0" Grid.Column="4" x:Name="widthSize" Text="600" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Row="0" x:Name="unitW" Grid.Column="5" Text=" px" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left"/>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="高度(" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="H" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
-                <TextBlock Grid.Row="1" Grid.Column="2" Text=")" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left"/>
-                <TextBlock Grid.Row="1" Grid.Column="3" Text=":" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock
 
-                <TextBlock Grid.Row="1" Grid.Column="4" x:Name="heightSize" Text="150" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Row="1" x:Name="unitH" Grid.Column="5" Text=" px" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left"/>
+                    Grid.Row="0"
 
-                <TextBlock x:Name="logicTitleW1" Grid.Row="2" Grid.Column="0" Text="邏輯(" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicTitleW2" Grid.Row="2" Grid.Column="1" Text="W" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicTitleW3" Grid.Row="2" Grid.Column="2" Text=")" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicTitleW4" Grid.Row="2" Grid.Column="3" Text=":" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicSizeW" Grid.Row="2" Grid.Column="4" Text="0" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Visibility="Collapsed"/>
-                <TextBlock x:Name="unitLW" Grid.Row="2" Grid.Column="5" Text=" unit" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left" Visibility="Collapsed"/>
+                    Grid.Column="0"
 
-                <TextBlock x:Name="logicTitleH1" Grid.Row="3" Grid.Column="0" Text="邏輯(" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicTitleH2" Grid.Row="3" Grid.Column="1" Text="H" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicTitleH3" Grid.Row="3" Grid.Column="2" Text=")" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicTitleH4" Grid.Row="3" Grid.Column="3" Text=":" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                <TextBlock x:Name="logicSizeH" Grid.Row="3" Grid.Column="4" Text="0" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Visibility="Collapsed"/>
-                <TextBlock x:Name="unitLH" Grid.Row="3" Grid.Column="5" Text=" unit" FontFamily="Noto Sans" Foreground="#630909" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left" Visibility="Collapsed"/>
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="寬度(" />
+
+                <TextBlock
+
+                    Grid.Row="0"
+
+                    Grid.Column="1"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="W" />
+
+                <TextBlock
+
+                    Grid.Row="0"
+
+                    Grid.Column="2"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=")" />
+
+                <TextBlock
+
+                    Grid.Row="0"
+
+                    Grid.Column="3"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=":" />
+
+
+
+                <TextBlock
+
+                    x:Name="widthSize"
+
+                    Grid.Row="0"
+
+                    Grid.Column="4"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="600" />
+
+                <TextBlock
+
+                    x:Name="unitW"
+
+                    Grid.Row="0"
+
+                    Grid.Column="5"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=" px" />
+
+
+
+                <TextBlock
+
+                    Grid.Row="1"
+
+                    Grid.Column="0"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="高度(" />
+
+                <TextBlock
+
+                    Grid.Row="1"
+
+                    Grid.Column="1"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="H" />
+
+                <TextBlock
+
+                    Grid.Row="1"
+
+                    Grid.Column="2"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=")" />
+
+                <TextBlock
+
+                    Grid.Row="1"
+
+                    Grid.Column="3"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=":" />
+
+
+
+                <TextBlock
+
+                    x:Name="heightSize"
+
+                    Grid.Row="1"
+
+                    Grid.Column="4"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="150" />
+
+                <TextBlock
+
+                    x:Name="unitH"
+
+                    Grid.Row="1"
+
+                    Grid.Column="5"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=" px" />
+
+
+
+                <TextBlock
+
+                    x:Name="logicTitleW1"
+
+                    Grid.Row="2"
+
+                    Grid.Column="0"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="邏輯("
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicTitleW2"
+
+                    Grid.Row="2"
+
+                    Grid.Column="1"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="W"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicTitleW3"
+
+                    Grid.Row="2"
+
+                    Grid.Column="2"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=")"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicTitleW4"
+
+                    Grid.Row="2"
+
+                    Grid.Column="3"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=":"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicSizeW"
+
+                    Grid.Row="2"
+
+                    Grid.Column="4"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="0"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="unitLW"
+
+                    Grid.Row="2"
+
+                    Grid.Column="5"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=" unit"
+
+                    Visibility="Collapsed" />
+
+
+
+                <TextBlock
+
+                    x:Name="logicTitleH1"
+
+                    Grid.Row="3"
+
+                    Grid.Column="0"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="邏輯("
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicTitleH2"
+
+                    Grid.Row="3"
+
+                    Grid.Column="1"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="H"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicTitleH3"
+
+                    Grid.Row="3"
+
+                    Grid.Column="2"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=")"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicTitleH4"
+
+                    Grid.Row="3"
+
+                    Grid.Column="3"
+
+                    HorizontalAlignment="Center"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=":"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="logicSizeH"
+
+                    Grid.Row="3"
+
+                    Grid.Column="4"
+
+                    HorizontalAlignment="Right"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text="0"
+
+                    Visibility="Collapsed" />
+
+                <TextBlock
+
+                    x:Name="unitLH"
+
+                    Grid.Row="3"
+
+                    Grid.Column="5"
+
+                    HorizontalAlignment="Left"
+
+                    FontFamily="Noto Sans"
+
+                    FontSize="16"
+
+                    FontWeight="Bold"
+
+                    Foreground="#630909"
+
+                    Text=" unit"
+
+                    Visibility="Collapsed" />
+
             </Grid>
+
         </StackPanel>
 
-        <Image Source="/JudyRuler2.png" 
-               Width="72" Height="72" 
-               Stretch="Uniform"
-               HorizontalAlignment="Right" 
-               VerticalAlignment="Bottom"
-               Margin="15,0,15,15"
-               Opacity="0.8"
-               Cursor="Hand" 
-               MouseLeftButtonDown="Logo_MouseLeftButtonDown">
+
+
+        <Image
+
+            Width="72"
+
+            Height="72"
+
+            Margin="15,0,15,15"
+
+            HorizontalAlignment="Right"
+
+            VerticalAlignment="Bottom"
+
+            Cursor="Hand"
+
+            MouseLeftButtonDown="Logo_MouseLeftButtonDown"
+
+            Opacity="0.8"
+
+            Source="/JudyRuler2.png"
+
+            Stretch="Uniform">
+
             <Image.Effect>
-                <DropShadowEffect BlurRadius="5" Color="White" Opacity="0.5" ShadowDepth="1"/>
+
+                <DropShadowEffect
+
+                    BlurRadius="5"
+
+                    Opacity="0.5"
+
+                    ShadowDepth="1"
+
+                    Color="White" />
+
             </Image.Effect>
+
         </Image>
 
-        
     </Grid>
+
 </Window>
