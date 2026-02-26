@@ -368,18 +368,11 @@
 
 
 
-        <Canvas
-
-            x:Name="RulerCanvas"
-
-            Width="600"
-
-            Height="150"
-
-            Margin="0,0,0,0"
-
-            ClipToBounds="False" />
-
+        <Canvas x:Name="RulerCanvas" 
+        HorizontalAlignment="Stretch" 
+        VerticalAlignment="Stretch" 
+        Margin="0,0,0,0" 
+        ClipToBounds="False" />
 
 
         <StackPanel
