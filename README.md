@@ -10,6 +10,7 @@
 此版本為「輕量化 (Framework-dependent)」執行前請安裝：
 
 * **[.NET 8.0 Desktop Runtime](https://www.google.com/search?q=https://dotnet.microsoft.com/download/dotnet/8.0)** (Windows x64)
+ps. 如果需要完整版本（包含 .NET Runtime）請聯絡作者。
 
 ### 🛠️ 技術規格
 
