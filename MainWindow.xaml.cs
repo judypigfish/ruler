@@ -177,119 +177,125 @@ namespace ruler
         // ==========================================
         // 輔助方法：計算旋轉後的完美包覆框尺寸
         // ==========================================
+
+
         private Size GetBoundingBox(double w, double h, double angle)
         {
             double rad = angle * Math.PI / 180.0;
             double cos = Math.Abs(Math.Cos(rad));
             double sin = Math.Abs(Math.Sin(rad));
-            return new Size((w * cos) + (h * sin) + 60, (w * sin) + (h * cos) + 60);
+            // 🌟 緩衝加大到 100，確保把手跟陰影不管在什麼角度都絕對安全
+            return new Size((w * cos) + (h * sin) + 100, (w * sin) + (h * cos) + 100);
+        }
+
+        // ==========================================
+        // 取得支援 DPI 縮放的絕對滑鼠座標 
+        // ==========================================
+        private Point GetMousePositionDIP()
+        {
+            GetCursorPos(out POINT pt);
+            PresentationSource source = PresentationSource.FromVisual(this);
+            if (source != null && source.CompositionTarget != null)
+            {
+                return source.CompositionTarget.TransformFromDevice.Transform(new Point(pt.X, pt.Y));
+            }
+            return new Point(pt.X, pt.Y);
         }
 
         // ==========================================
         // 拖曳狀態變數
         // ==========================================
-        private Point dragStartMouseRelative;
+        private Point dragStartMouseAbsolute;
         private double dragStartRulerWidth;
         private double dragStartRulerHeight;
         private double dragStartAngle;
-        private Point dragStartAbsoluteCenter;
+        private Point dragStartWindowCenterAbsolute;
+        private Point currentWindowCenterAbsolute; // 🌟 隨時紀錄最新的中心點
 
         // ==========================================
-        // 1. 拖曳開始：「先展開預留空間」
+        // 1. 拖曳開始：使用你的 Ctrl 對角線絕招！
         // ==========================================
         private void Thumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            // 🌟 【徹底破案】：如果視窗剛啟動，Left 和 Top 會是 NaN，必須強制轉換為絕對座標！
+            // 防呆機制：解決剛開程式的 NaN 問題
             if (double.IsNaN(this.Left) || double.IsNaN(this.Top))
             {
                 try
                 {
-                    // 將視窗的原點 (0,0) 轉換為螢幕上的真實座標
                     Point p = this.PointToScreen(new Point(0, 0));
                     PresentationSource source = PresentationSource.FromVisual(this);
-                    if (source != null)
-                    {
-                        p = source.CompositionTarget.TransformFromDevice.Transform(p);
-                    }
+                    if (source != null) p = source.CompositionTarget.TransformFromDevice.Transform(p);
                     this.Left = p.X;
                     this.Top = p.Y;
                 }
-                catch
-                {
-                    // 防呆機制：如果轉換失敗給個預設值
-                    this.Left = 0;
-                    this.Top = 0;
-                }
+                catch { this.Left = 0; this.Top = 0; }
             }
 
-            // 確保尺有明確的寬高
-            if (double.IsNaN(RulerBody.Width)) RulerBody.Width = RulerBody.ActualWidth;
-            if (double.IsNaN(RulerBody.Height)) RulerBody.Height = RulerBody.ActualHeight;
+            if (double.IsNaN(RulerBody.Width)) RulerBody.Width = RulerBody.ActualWidth > 0 ? RulerBody.ActualWidth : 600;
+            if (double.IsNaN(RulerBody.Height)) RulerBody.Height = RulerBody.ActualHeight > 0 ? RulerBody.ActualHeight : 150;
 
             dragStartRulerWidth = RulerBody.Width;
             dragStartRulerHeight = RulerBody.Height;
             dragStartAngle = windowRotation.Angle;
 
-            // 取得視窗真正的寬高
             double currentW = double.IsNaN(this.Width) ? this.ActualWidth : this.Width;
             double currentH = double.IsNaN(this.Height) ? this.ActualHeight : this.Height;
 
-            // 紀錄絕對中心點 (因為消滅了 NaN，現在絕對安全！)
-            dragStartAbsoluteCenter = new Point(this.Left + currentW / 2, this.Top + currentH / 2);
+            // 紀錄起點中心
+            dragStartWindowCenterAbsolute = new Point(this.Left + currentW / 2, this.Top + currentH / 2);
+            currentWindowCenterAbsolute = dragStartWindowCenterAbsolute;
+            dragStartMouseAbsolute = GetMousePositionDIP();
 
-            // 把視窗瞬間撐大到 6000x6000，並把中心點對齊原本的尺
-            this.Width = 6000;
-            this.Height = 6000;
-            this.Left = dragStartAbsoluteCenter.X - 3000;
-            this.Top = dragStartAbsoluteCenter.Y - 3000;
+            // 🌟 核心：算出對角線長度，把視窗瞬間撐成「永遠切不到」的巨大正方形
+            double diag = Math.Sqrt(Math.Pow(dragStartRulerWidth, 2) + Math.Pow(dragStartRulerHeight, 2));
+            double safeSize = diag + 100; // 加上 100 緩衝確保把手不消失
 
-            RulerBody.Margin = new Thickness(0); // 重置內部偏移
+            this.Width = safeSize;
+            this.Height = safeSize;
+            this.Left = dragStartWindowCenterAbsolute.X - (safeSize / 2);
+            this.Top = dragStartWindowCenterAbsolute.Y - (safeSize / 2);
 
-            // 強制 WPF 立即更新畫面版面
-            this.UpdateLayout();
-
-            // 紀錄滑鼠的座標
-            dragStartMouseRelative = Mouse.GetPosition(this);
+            RulerBody.Margin = new Thickness(0);
             e.Handled = true;
         }
 
         // ==========================================
-        // 2A. 旋轉中：視窗不動，滑鼠零干擾
+        // 2A. 旋轉中：視窗已經是正方形，只需旋轉內容，完全不需改視窗尺寸！
         // ==========================================
         private void ThumbRotate_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            Point currentMouse = Mouse.GetPosition(this);
+            Point currentMouse = GetMousePositionDIP();
 
-            // 視窗是 6000x6000，所以中心點永遠是 3000, 3000
-            double startAngleRad = Math.Atan2(dragStartMouseRelative.Y - 3000, dragStartMouseRelative.X - 3000);
-            double currentAngleRad = Math.Atan2(currentMouse.Y - 3000, currentMouse.X - 3000);
+            double startAngleRad = Math.Atan2(dragStartMouseAbsolute.Y - dragStartWindowCenterAbsolute.Y, dragStartMouseAbsolute.X - dragStartWindowCenterAbsolute.X);
+            double currentAngleRad = Math.Atan2(currentMouse.Y - dragStartWindowCenterAbsolute.Y, currentMouse.X - dragStartWindowCenterAbsolute.X);
 
             double deltaAngle = (currentAngleRad - startAngleRad) * 180 / Math.PI;
             double newAngle = (dragStartAngle + deltaAngle + 360) % 360;
 
-            // 磁吸效果
             if (newAngle < 3 || newAngle > 357) newAngle = 0;
             else if (newAngle > 87 && newAngle < 93) newAngle = 90;
             else if (newAngle > 177 && newAngle < 183) newAngle = 180;
             else if (newAngle > 267 && newAngle < 273) newAngle = 270;
 
+            // 🌟 因為我們在 DragStarted 已經把視窗變成對角線長度的正方形了
+            // 這裡「不要」修改 this.Width 和 this.Height，視窗不動，保證絕不閃爍、絕不切邊！
             windowRotation.Angle = newAngle;
+
             e.Handled = true;
         }
 
         // ==========================================
-        // 2B. 縮放中：用 Margin 推移內容，視覺釘死原點
+        // 2B. 縮放中
         // ==========================================
         private void ThumbResize_DragDelta(object sender, DragDeltaEventArgs e)
         {
             Thumb thumb = sender as Thumb;
             if (thumb == null) return;
 
-            Point currentMouse = Mouse.GetPosition(this);
-            double deltaX = currentMouse.X - dragStartMouseRelative.X;
-            double deltaY = currentMouse.Y - dragStartMouseRelative.Y;
+            Point currentMouse = GetMousePositionDIP();
+            double deltaX = currentMouse.X - dragStartMouseAbsolute.X;
+            double deltaY = currentMouse.Y - dragStartMouseAbsolute.Y;
 
-            // 將滑鼠位移量反向旋轉，換算成尺變長/變寬的正確數值
             double radLocal = -dragStartAngle * Math.PI / 180.0;
             double localDeltaX = deltaX * Math.Cos(radLocal) - deltaY * Math.Sin(radLocal);
             double localDeltaY = deltaX * Math.Sin(radLocal) + deltaY * Math.Cos(radLocal);
@@ -309,14 +315,24 @@ namespace ruler
             RulerBody.Width = newW;
             RulerBody.Height = newH;
 
-            // 🌟 核心數學：因為 Grid 是置中的，變大時會向四周均勻擴張。
-            // 為了讓尺的「左上角/左下角」釘死在原地，我們用 Margin 把內容推回去。
             double radAbs = dragStartAngle * Math.PI / 180.0;
-            double screenShiftX = (dW / 2) * Math.Cos(radAbs) - (dH / 2) * Math.Sin(radAbs);
-            double screenShiftY = (dW / 2) * Math.Sin(radAbs) + (dH / 2) * Math.Cos(radAbs);
+            double shiftCenterX = (dW / 2) * Math.Cos(radAbs) - (dH / 2) * Math.Sin(radAbs);
+            double shiftCenterY = (dW / 2) * Math.Sin(radAbs) + (dH / 2) * Math.Cos(radAbs);
 
-            // 套用兩倍的 Margin 偏移量 (因為置中對齊會抵銷一半)
-            RulerBody.Margin = new Thickness(screenShiftX * 2, screenShiftY * 2, 0, 0);
+            // 更新絕對中心點
+            currentWindowCenterAbsolute = new Point(
+                dragStartWindowCenterAbsolute.X + shiftCenterX,
+                dragStartWindowCenterAbsolute.Y + shiftCenterY
+            );
+
+            // 🌟 縮放時同樣維持對角線正方形的邏輯，避免越拉越大超出邊界
+            double diag = Math.Sqrt(Math.Pow(newW, 2) + Math.Pow(newH, 2));
+            double safeSize = diag + 100;
+
+            this.Width = safeSize;
+            this.Height = safeSize;
+            this.Left = currentWindowCenterAbsolute.X - (safeSize / 2);
+            this.Top = currentWindowCenterAbsolute.Y - (safeSize / 2);
 
             UpdateTexts();
             DrawRuler();
@@ -324,33 +340,17 @@ namespace ruler
         }
 
         // ==========================================
-        // 3. 拖曳結束：「再縮回來貼齊」(你的想法)
+        // 3. 拖曳結束：把正方形縮回「剛好包覆」的大小，還給桌面點擊空間
         // ==========================================
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            double dW = RulerBody.Width - dragStartRulerWidth;
-            double dH = RulerBody.Height - dragStartRulerHeight;
-
-            // 計算這段期間內，尺的「真實中心點」位移了多少
-            double radAbs = windowRotation.Angle * Math.PI / 180.0;
-            double screenShiftX = (dW / 2) * Math.Cos(radAbs) - (dH / 2) * Math.Sin(radAbs);
-            double screenShiftY = (dW / 2) * Math.Sin(radAbs) + (dH / 2) * Math.Cos(radAbs);
-
-            // 新的絕對中心點
-            Point newAbsoluteCenter = new Point(
-                dragStartAbsoluteCenter.X + screenShiftX,
-                dragStartAbsoluteCenter.Y + screenShiftY
-            );
-
-            // 計算剛剛好包覆尺的視窗大小
+            // 🌟 瞬間收縮：計算出最緊密的長方形包覆框
             Size box = GetBoundingBox(RulerBody.Width, RulerBody.Height, windowRotation.Angle);
 
-            // 🌟 瞬間收縮：移除 Margin 偏移，把視窗縮到最小，並對齊新的中心點
-            RulerBody.Margin = new Thickness(0);
             this.Width = box.Width;
             this.Height = box.Height;
-            this.Left = newAbsoluteCenter.X - box.Width / 2;
-            this.Top = newAbsoluteCenter.Y - box.Height / 2;
+            this.Left = currentWindowCenterAbsolute.X - (box.Width / 2);
+            this.Top = currentWindowCenterAbsolute.Y - (box.Height / 2);
 
             e.Handled = true;
         }
