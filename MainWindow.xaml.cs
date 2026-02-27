@@ -206,7 +206,13 @@ namespace ruler
 
         private void SetRatio_Click(object sender, RoutedEventArgs e)
         {
-            //保留您的 RatioWindow 邏輯
+            RatioWindow rw = new RatioWindow { Owner = this };
+            if (rw.ShowDialog() == true)
+            {
+                ratioPx = rw.PxLength; ratioLogic = rw.LogicLength; ratioUnit = rw.LogicUnit ?? "";
+                MenuRatioToggle.IsChecked = true;
+                MenuRatioToggle_Click(MenuRatioToggle, new RoutedEventArgs());
+            }
         }
 
         // ==========================================

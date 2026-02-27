@@ -3,7 +3,7 @@
 這是一款螢幕測量工具。採用 WPF 開發，支援 **360 度旋轉**、**透明度調整** 以及 **邏輯比例換算**，讓你在量測網頁元件、UI 介面或是視覺輸出時更加精準。
 
 ### 📥 下載與執行
-👉 **[下載 Ruler.exe](https://www.google.com/search?q=./release/JudyRuler.exe)** 
+👉 **[下載 Ruler.exe](./release/JudyRuler.exe)** 
 
 ### ⚠️ 執行前準備
 
