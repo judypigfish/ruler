@@ -167,7 +167,7 @@ namespace ruler
                     RulerBody.Background = new SolidColorBrush(Color.FromArgb((byte)(255 * ((100 - pct) / 100.0)), 255, 255, 255));
             }
         }
-        private void MenuAbout_Click(object sender, RoutedEventArgs e) => MessageBox.Show("螢幕半透明尺 v1.0", "關於");
+        private void MenuAbout_Click(object sender, RoutedEventArgs e) => MessageBox.Show("螢幕半透明尺 v1.1", "關於");
         private void MenuExit_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
         private void Logo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { e.Handled = true; try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://store.line.me/emojishop/product/688098f87177072ad3367082/zh-Hant", UseShellExecute = true }); } catch { } }
 
@@ -308,7 +308,7 @@ namespace ruler
 
         private void ThumbResize_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            Thumb thumb = sender as Thumb;
+            Thumb? thumb = sender as Thumb;
             if (thumb == null) return;
 
             Point currentMouse = Mouse.GetPosition(this);
