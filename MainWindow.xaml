@@ -7,7 +7,7 @@
     Height="150"
     AllowsTransparency="True"
     Background="Transparent"
-    Icon="JudyRuler.ico"
+    Icon="pack://application:,,,/JudyRuler.ico"
     KeyDown="Window_KeyDown"
     MouseLeftButtonDown="Window_MouseLeftButtonDown"
     MouseLeftButtonUp="Window_MouseLeftButtonUp"
@@ -16,6 +16,7 @@
     SizeChanged="Window_SizeChanged"
     Topmost="True"
     WindowStyle="None">
+
     <WindowChrome.WindowChrome>
         <WindowChrome
             CaptionHeight="0"
@@ -23,6 +24,7 @@
             GlassFrameThickness="0"
             ResizeBorderThickness="8" />
     </WindowChrome.WindowChrome>
+
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem
@@ -31,93 +33,127 @@
                 IsCheckable="True"
                 IsChecked="False" />
             <MenuItem Header="度量比率">
+
                 <MenuItem
                     x:Name="MenuRatioToggle"
                     Click="MenuRatioToggle_Click"
                     Header="啟用邏輯比例"
                     IsCheckable="True"
                     IsChecked="False" />
+
                 <Separator />
+
                 <MenuItem Click="SetRatio_Click" Header="設定度量比率..." />
+
             </MenuItem>
+
             <MenuItem Header="量度單位">
+
                 <MenuItem
                     Click="MenuUnit_Click"
                     Header="像素 (px)"
                     IsCheckable="True"
                     IsChecked="True" />
+
                 <MenuItem
                     Click="MenuUnit_Click"
                     Header="公厘 (mm)"
                     IsCheckable="True" />
+
             </MenuItem>
+
             <MenuItem Header="位置">
+
                 <MenuItem
                     x:Name="MenuPosLeft"
                     Click="MenuPosition_Click"
                     Header="左"
                     IsCheckable="True" />
+
                 <MenuItem
                     x:Name="MenuPosTop"
                     Click="MenuPosition_Click"
                     Header="上"
                     IsCheckable="True"
                     IsChecked="True" />
+
                 <MenuItem
                     x:Name="MenuPosRight"
                     Click="MenuPosition_Click"
                     Header="右"
                     IsCheckable="True" />
+
                 <MenuItem
                     x:Name="MenuPosBottom"
                     Click="MenuPosition_Click"
                     Header="下"
                     IsCheckable="True" />
+
             </MenuItem>
+
             <MenuItem Header="透明度">
+
                 <MenuItem
                     Click="MenuOpacity_Click"
                     Header="10%"
                     IsCheckable="True" />
+
                 <MenuItem
                     Click="MenuOpacity_Click"
                     Header="20%"
                     IsCheckable="True" />
+
                 <MenuItem
                     Click="MenuOpacity_Click"
                     Header="30%"
                     IsCheckable="True"
                     IsChecked="True" />
+
                 <MenuItem
                     Click="MenuOpacity_Click"
                     Header="40%"
                     IsCheckable="True" />
+
                 <MenuItem
                     Click="MenuOpacity_Click"
                     Header="50%"
                     IsCheckable="True" />
+
                 <MenuItem
                     Click="MenuOpacity_Click"
                     Header="60%"
                     IsCheckable="True" />
+
             </MenuItem>
             <Separator />
+            <MenuItem Header="重設為預設值" Click="MenuReset_Click" />
+            <Separator />
             <MenuItem Click="MenuAbout_Click" Header="關於" />
+
             <MenuItem Click="MenuExit_Click" Header="離開" />
+
         </ContextMenu>
+
     </Window.ContextMenu>
+
     <Grid
         x:Name="RulerBody"
         Width="600"
         Height="150"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="0"
         Background="#AAFFFFFF"
         ClipToBounds="False"
         RenderTransformOrigin="0.5,0.5">
+
         <Grid.RenderTransform>
-            <RotateTransform x:Name="windowRotation" Angle="0" />
+            <TransformGroup>
+                <RotateTransform x:Name="windowRotation" Angle="0" />
+                <TranslateTransform x:Name="currentTranslation1" X="0" Y="0" />
+            </TransformGroup>
         </Grid.RenderTransform>
+
         <Grid.Resources>
             <Style x:Key="ThumbStyle" TargetType="Thumb">
                 <Setter Property="Width" Value="16"/>
@@ -131,54 +167,76 @@
                 </Setter>
             </Style>
         </Grid.Resources>
+
         <Thumb x:Name="ThumbRotate" Style="{StaticResource ThumbStyle}" Cursor="Hand" 
        VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,-25,0,0"
        DragStarted="Thumb_DragStarted" 
        DragDelta="ThumbRotate_DragDelta" 
        DragCompleted="Thumb_DragCompleted"/>
+
         <Thumb x:Name="ThumbResizeRightBottom" Style="{StaticResource ThumbStyle}" Cursor="SizeNWSE"
        VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,-8,-8"
        DragStarted="Thumb_DragStarted" 
        DragDelta="ThumbResize_DragDelta" 
        DragCompleted="Thumb_DragCompleted"/>
+
         <Thumb x:Name="ThumbResizeRight" Style="{StaticResource ThumbStyle}" Cursor="SizeWE"
        VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-8,0"
        DragStarted="Thumb_DragStarted" 
        DragDelta="ThumbResize_DragDelta" 
        DragCompleted="Thumb_DragCompleted"/>
+
         <Thumb x:Name="ThumbResizeBottom" Style="{StaticResource ThumbStyle}" Cursor="SizeNS"
        VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,-8"
        DragStarted="Thumb_DragStarted" 
        DragDelta="ThumbResize_DragDelta" 
        DragCompleted="Thumb_DragCompleted"/>
+
         <Canvas
             x:Name="RulerCanvas"
             Margin="0,0,0,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             ClipToBounds="False" />
+
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             IsHitTestVisible="False">
+
             <Grid
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsHitTestVisible="False">
+
                 <Grid.ColumnDefinitions>
+
                     <ColumnDefinition Width="Auto" />
+
                     <ColumnDefinition Width="22" />
+
                     <ColumnDefinition Width="Auto" />
+
                     <ColumnDefinition Width="20" />
+
                     <ColumnDefinition Width="Auto" />
+
                     <ColumnDefinition Width="Auto" />
+
                 </Grid.ColumnDefinitions>
+
                 <Grid.RowDefinitions>
+
                     <RowDefinition Height="Auto" />
+
                     <RowDefinition Height="Auto" />
+
                     <RowDefinition Height="Auto" />
+
                     <RowDefinition Height="Auto" />
+
                 </Grid.RowDefinitions>
+
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
@@ -188,6 +246,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text="寬度(" />
+
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="1"
@@ -197,6 +256,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text="W" />
+
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="2"
@@ -206,6 +266,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text=")" />
+
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="3"
@@ -215,6 +276,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text=":" />
+
                 <TextBlock
                     x:Name="widthSize"
                     Grid.Row="0"
@@ -225,6 +287,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text="600" />
+
                 <TextBlock
                     x:Name="unitW"
                     Grid.Row="0"
@@ -235,6 +298,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text=" px" />
+
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
@@ -244,6 +308,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text="高度(" />
+
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
@@ -253,6 +318,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text="H" />
+
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="2"
@@ -262,6 +328,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text=")" />
+
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="3"
@@ -271,6 +338,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text=":" />
+
                 <TextBlock
                     x:Name="heightSize"
                     Grid.Row="1"
@@ -281,6 +349,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text="150" />
+
                 <TextBlock
                     x:Name="unitH"
                     Grid.Row="1"
@@ -291,6 +360,7 @@
                     FontWeight="Bold"
                     Foreground="#630909"
                     Text=" px" />
+
                 <TextBlock
                     x:Name="logicTitleW1"
                     Grid.Row="2"
@@ -302,6 +372,7 @@
                     Foreground="#630909"
                     Text="邏輯("
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleW2"
                     Grid.Row="2"
@@ -313,6 +384,7 @@
                     Foreground="#630909"
                     Text="W"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleW3"
                     Grid.Row="2"
@@ -324,6 +396,7 @@
                     Foreground="#630909"
                     Text=")"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleW4"
                     Grid.Row="2"
@@ -335,6 +408,7 @@
                     Foreground="#630909"
                     Text=":"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicSizeW"
                     Grid.Row="2"
@@ -346,6 +420,7 @@
                     Foreground="#630909"
                     Text="0"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="unitLW"
                     Grid.Row="2"
@@ -357,6 +432,7 @@
                     Foreground="#630909"
                     Text=" unit"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleH1"
                     Grid.Row="3"
@@ -368,6 +444,7 @@
                     Foreground="#630909"
                     Text="邏輯("
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleH2"
                     Grid.Row="3"
@@ -379,6 +456,7 @@
                     Foreground="#630909"
                     Text="H"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleH3"
                     Grid.Row="3"
@@ -390,6 +468,7 @@
                     Foreground="#630909"
                     Text=")"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicTitleH4"
                     Grid.Row="3"
@@ -401,6 +480,7 @@
                     Foreground="#630909"
                     Text=":"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="logicSizeH"
                     Grid.Row="3"
@@ -412,6 +492,7 @@
                     Foreground="#630909"
                     Text="0"
                     Visibility="Collapsed" />
+
                 <TextBlock
                     x:Name="unitLH"
                     Grid.Row="3"
@@ -423,19 +504,23 @@
                     Foreground="#630909"
                     Text=" unit"
                     Visibility="Collapsed" />
+
             </Grid>
+
         </StackPanel>
+
         <Image
-            Width="72"
-            Height="72"
-            Margin="15,0,15,15"
+            Width="50"
+            Height="50"
+            Margin="45,0,35,20"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
             Cursor="Hand"
             MouseLeftButtonDown="Logo_MouseLeftButtonDown"
             Opacity="0.8"
-            Source="/JudyRuler2.png"
+            Source="pack://application:,,,/JudyRuler2.png"
             Stretch="Uniform">
+
             <Image.Effect>
                 <DropShadowEffect
                     BlurRadius="5"

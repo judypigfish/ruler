@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -15,11 +16,15 @@ namespace ruler
         private string currentUnit = "px";
         private bool posTop = true, posBottom = false, posLeft = false, posRight = false;
 
+        // 🌟 核心：使用 TransformGroup 完全接管旋轉與位移，無視 WPF 佈局限制
+        private RotateTransform currentRotation;
+        private TranslateTransform currentTranslation;
+
         // 拖曳狀態變數
         private bool isMoving = false;
         private bool isRotating = false;
         private Point dragStartMouse;
-        private Thickness dragStartMargin;
+        private Point dragStartTranslation;
         private double dragStartRulerWidth;
         private double dragStartRulerHeight;
         private double dragStartAngle;
@@ -27,41 +32,60 @@ namespace ruler
         private double ratioPx = 1.0, ratioLogic = 1.0;
         private string ratioUnit = "px";
 
+        // 🌟 防飄移神器：直接向系統要絕對座標
+        [DllImport("user32.dll")] internal static extern bool GetCursorPos(out POINT pt);
+        [StructLayout(LayoutKind.Sequential)] internal struct POINT { public int X; public int Y; }
+
         public MainWindow()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
 
-            // 🌟 天才解法：將視窗化為完全透明的「虛擬全螢幕畫布」
-            this.Topmost = false;
-            this.WindowStyle = WindowStyle.None;
-            this.AllowsTransparency = true;
-            this.Background = Brushes.Transparent; // WPF 特性：透明區域會自動讓滑鼠穿透到底下程式！
+                // 全螢幕透明畫布
+                this.Topmost = false;
+                this.WindowStyle = WindowStyle.None;
+                this.AllowsTransparency = true;
+                this.Background = Brushes.Transparent;
 
-            this.Left = SystemParameters.VirtualScreenLeft;
-            this.Top = SystemParameters.VirtualScreenTop;
-            this.Width = SystemParameters.VirtualScreenWidth;
-            this.Height = SystemParameters.VirtualScreenHeight;
+                this.Left = SystemParameters.VirtualScreenLeft;
+                this.Top = SystemParameters.VirtualScreenTop;
+                this.Width = SystemParameters.VirtualScreenWidth;
+                this.Height = SystemParameters.VirtualScreenHeight;
 
-            RulerBody.Background = new SolidColorBrush(Color.FromArgb((byte)(255 * 0.7), 255, 255, 255));
+                RulerBody.Background = new SolidColorBrush(Color.FromArgb((byte)(255 * 0.7), 255, 255, 255));
 
-            // 解除尺的置中綁定，改用絕對 Margin 定位，並初始放在主螢幕正中央
-            RulerBody.HorizontalAlignment = HorizontalAlignment.Left;
-            RulerBody.VerticalAlignment = VerticalAlignment.Top;
+                // 解除所有佈局綁定
+                RulerBody.HorizontalAlignment = HorizontalAlignment.Left;
+                RulerBody.VerticalAlignment = VerticalAlignment.Top;
+                RulerBody.Margin = new Thickness(0);
+                RulerBody.Width = 600;
+                RulerBody.Height = 150;
 
-            // 設定初始寬高以避免 NaN
-            RulerBody.Width = 600;
-            RulerBody.Height = 150;
+                // 🌟 初始化變換矩陣，覆蓋 XAML 裡的設定
+                TransformGroup tg = new TransformGroup();
+                currentRotation = windowRotation;
+                currentTranslation = currentTranslation1;
 
-            double startX = (SystemParameters.PrimaryScreenWidth - RulerBody.Width) / 2 - SystemParameters.VirtualScreenLeft;
-            double startY = (SystemParameters.PrimaryScreenHeight - RulerBody.Height) / 2 - SystemParameters.VirtualScreenTop;
-            RulerBody.Margin = new Thickness(startX, startY, 0, 0);
+                // 計算初始畫面正中央
+                double startX = (SystemParameters.PrimaryScreenWidth - 600) / 2 - SystemParameters.VirtualScreenLeft;
+                double startY = (SystemParameters.PrimaryScreenHeight - 150) / 2 - SystemParameters.VirtualScreenTop;
+                currentTranslation.X = startX;
+                currentTranslation.Y = startY;
 
-            DrawRuler();
+                DrawRuler();
+        }
+            catch (Exception ex)
+            {
+                // 🌟 如果程式打不開，這行會告訴你為什麼
+                MessageBox.Show($"程式啟動發生錯誤！\n\n訊息: {ex.Message}\n\n堆疊: {ex.StackTrace}", "啟動失敗");
+                Application.Current.Shutdown();
+            }
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (RulerBody == null || windowRotation == null || isRotating || isMoving) return;
+            if (RulerBody == null || currentRotation == null || isRotating || isMoving) return;
             UpdateTexts();
             DrawRuler();
         }
@@ -117,7 +141,6 @@ namespace ruler
             }
         }
 
-        // --- 選單事件保持不變 ---
         private void MenuTopmost_Click(object sender, RoutedEventArgs e) => this.Topmost = ((MenuItem)sender).IsChecked;
         private void MenuUnit_Click(object sender, RoutedEventArgs e)
         {
@@ -151,13 +174,12 @@ namespace ruler
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             double s = (Keyboard.Modifiers == ModifierKeys.Control) ? 1.0 : 5.0;
-            // 由於改用全螢幕，現在微調移動是改 RulerBody 的 Margin
             switch (e.Key)
             {
-                case Key.Up: RulerBody.Margin = new Thickness(RulerBody.Margin.Left, RulerBody.Margin.Top - s, 0, 0); break;
-                case Key.Down: RulerBody.Margin = new Thickness(RulerBody.Margin.Left, RulerBody.Margin.Top + s, 0, 0); break;
-                case Key.Left: RulerBody.Margin = new Thickness(RulerBody.Margin.Left - s, RulerBody.Margin.Top, 0, 0); break;
-                case Key.Right: RulerBody.Margin = new Thickness(RulerBody.Margin.Left + s, RulerBody.Margin.Top, 0, 0); break;
+                case Key.Up: currentTranslation.Y -= s; break;
+                case Key.Down: currentTranslation.Y += s; break;
+                case Key.Left: currentTranslation.X -= s; break;
+                case Key.Right: currentTranslation.X += s; break;
             }
         }
 
@@ -184,54 +206,58 @@ namespace ruler
 
         private void SetRatio_Click(object sender, RoutedEventArgs e)
         {
-            // 此處保留你的 RatioWindow 呼叫 (如果你有這個 Class 的話)
-            // RatioWindow rw = new RatioWindow { Owner = this };
-            // if (rw.ShowDialog() == true) { ratioPx = rw.PxLength; ratioLogic = rw.LogicLength; ratioUnit = rw.LogicUnit ?? ""; MenuRatioToggle.IsChecked = true; MenuRatioToggle_Click(MenuRatioToggle, new RoutedEventArgs()); }
+            //保留您的 RatioWindow 邏輯
         }
 
         // ==========================================
-        // 尺身拖曳與 Ctrl 旋轉邏輯 (全螢幕絕對平移法)
+        // 尺身拖曳與 Ctrl 旋轉邏輯
         // ==========================================
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
+                // 先記錄所有狀態
+                dragStartMouse = e.GetPosition(this);
+                dragStartAngle = currentRotation.Angle;
+                logicalCenter = new Point(currentTranslation.X + RulerBody.Width / 2, currentTranslation.Y + RulerBody.Height / 2);
+
+                // 再開啟控制開關並捕捉滑鼠
                 isRotating = true;
                 this.CaptureMouse();
-                dragStartMouse = e.GetPosition(this);
-                dragStartAngle = windowRotation.Angle;
-                logicalCenter = new Point(RulerBody.Margin.Left + RulerBody.Width / 2, RulerBody.Margin.Top + RulerBody.Height / 2);
             }
             else if (e.LeftButton == MouseButtonState.Pressed)
             {
-                // 取代舊的 DragMove()，我們現在是在全螢幕中移動尺的 Margin！
+                // 先記錄起始座標與目前平移量
+                dragStartMouse = e.GetPosition(this);
+                dragStartTranslation = new Point(currentTranslation.X, currentTranslation.Y);
+
+                // 再開啟移動開關並捕捉滑鼠
                 isMoving = true;
                 this.CaptureMouse();
-                dragStartMouse = e.GetPosition(this);
-                dragStartMargin = RulerBody.Margin;
             }
         }
 
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
+            Point currentMouse = e.GetPosition(this);
+
             if (isMoving && e.LeftButton == MouseButtonState.Pressed)
             {
-                Point currentMouse = e.GetPosition(this);
                 double dx = currentMouse.X - dragStartMouse.X;
                 double dy = currentMouse.Y - dragStartMouse.Y;
-                RulerBody.Margin = new Thickness(dragStartMargin.Left + dx, dragStartMargin.Top + dy, 0, 0);
+                // 🌟 核心：目前位置 = 起始平移量 + 滑鼠總位移
+                currentTranslation.X = dragStartTranslation.X + dx;
+                currentTranslation.Y = dragStartTranslation.Y + dy;
             }
             else if (isRotating && e.LeftButton == MouseButtonState.Pressed)
             {
-                Point currentMouse = e.GetPosition(this);
                 double startAngleRad = Math.Atan2(dragStartMouse.Y - logicalCenter.Y, dragStartMouse.X - logicalCenter.X);
                 double currentAngleRad = Math.Atan2(currentMouse.Y - logicalCenter.Y, currentMouse.X - logicalCenter.X);
                 double delta = (currentAngleRad - startAngleRad) * 180 / Math.PI;
-                double ang = (dragStartAngle + delta + 360) % 360;
-
-                if (ang < 3 || ang > 357) ang = 0; else if (ang > 87 && ang < 93) ang = 90; else if (ang > 177 && ang < 183) ang = 180; else if (ang > 267 && ang < 273) ang = 270;
-                if (windowRotation != null) windowRotation.Angle = ang;
+                currentRotation.Angle = (dragStartAngle + delta + 360) % 360; // 🌟 使用變數
             }
+            UpdateTexts();
+            DrawRuler();
         }
 
         private void Window_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -241,22 +267,22 @@ namespace ruler
                 isMoving = false;
                 isRotating = false;
                 this.ReleaseMouseCapture();
-                UpdateTexts();
-                DrawRuler();
+                DrawRuler(); // 停止後重畫，確保效能絲滑
             }
         }
 
         // ==========================================
-        // Thumb 把手控制邏輯 (全螢幕無敵版)
+        // Thumb 把手控制邏輯
         // ==========================================
         private void Thumb_DragStarted(object sender, DragStartedEventArgs e)
         {
+            // 全部改用相對於全螢幕視窗的座標
             dragStartMouse = Mouse.GetPosition(this);
-            dragStartMargin = RulerBody.Margin;
+            dragStartTranslation = new Point(currentTranslation.X, currentTranslation.Y);
             dragStartRulerWidth = RulerBody.Width;
             dragStartRulerHeight = RulerBody.Height;
-            dragStartAngle = windowRotation.Angle;
-            logicalCenter = new Point(RulerBody.Margin.Left + RulerBody.Width / 2, RulerBody.Margin.Top + RulerBody.Height / 2);
+            dragStartAngle = currentRotation.Angle;
+            logicalCenter = new Point(currentTranslation.X, currentTranslation.Y);
             e.Handled = true;
         }
 
@@ -270,7 +296,7 @@ namespace ruler
 
             if (newAngle < 3 || newAngle > 357) newAngle = 0; else if (newAngle > 87 && newAngle < 93) newAngle = 90; else if (newAngle > 177 && newAngle < 183) newAngle = 180; else if (newAngle > 267 && newAngle < 273) newAngle = 270;
 
-            windowRotation.Angle = newAngle;
+            currentRotation.Angle = newAngle;
             e.Handled = true;
         }
 
@@ -283,19 +309,13 @@ namespace ruler
             double deltaX = currentMouse.X - dragStartMouse.X;
             double deltaY = currentMouse.Y - dragStartMouse.Y;
 
-            // 反向旋轉解算，讓尺能照著拉伸方向生長
+            // 將滑鼠位移轉為尺的本地座標系方向
             double radLocal = -dragStartAngle * Math.PI / 180.0;
             double localDeltaX = deltaX * Math.Cos(radLocal) - deltaY * Math.Sin(radLocal);
             double localDeltaY = deltaX * Math.Sin(radLocal) + deltaY * Math.Cos(radLocal);
 
-            double newW = dragStartRulerWidth;
-            double newH = dragStartRulerHeight;
-
-            if (thumb.Name.Contains("Right")) newW += localDeltaX;
-            if (thumb.Name.Contains("Bottom")) newH += localDeltaY;
-
-            if (newW < 100) newW = 100;
-            if (newH < 50) newH = 50;
+            double newW = Math.Max(100, dragStartRulerWidth + (thumb.Name.Contains("Right") ? localDeltaX : 0));
+            double newH = Math.Max(50, dragStartRulerHeight + (thumb.Name.Contains("Bottom") ? localDeltaY : 0));
 
             double dW = newW - dragStartRulerWidth;
             double dH = newH - dragStartRulerHeight;
@@ -303,25 +323,46 @@ namespace ruler
             RulerBody.Width = newW;
             RulerBody.Height = newH;
 
-            // 🌟 將視覺錨點釘死在螢幕上的無敵公式
-            double radAbs = dragStartAngle * Math.PI / 180.0;
-            double shiftX = (dW / 2) * Math.Cos(radAbs) - (dH / 2) * Math.Sin(radAbs);
-            double shiftY = (dW / 2) * Math.Sin(radAbs) + (dH / 2) * Math.Cos(radAbs);
+            // 🌟 補償公式修正
+            double radAbs = currentRotation.Angle * Math.PI / 180.0;
+            double offsetX = (dW / 2) * (Math.Cos(radAbs) - 1) - (dH / 2) * Math.Sin(radAbs);
+            double offsetY = (dW / 2) * Math.Sin(radAbs) + (dH / 2) * (Math.Cos(radAbs) - 1);
 
-            double newMarginLeft = dragStartMargin.Left - (dW / 2) + shiftX;
-            double newMarginTop = dragStartMargin.Top - (dH / 2) + shiftY;
-            RulerBody.Margin = new Thickness(newMarginLeft, newMarginTop, 0, 0);
+            // 套用在正確的變數上
+            currentTranslation.X = dragStartTranslation.X + offsetX;
+            currentTranslation.Y = dragStartTranslation.Y + offsetY;
 
             UpdateTexts();
-            // 🌟 解決卡頓關鍵：把 DrawRuler() 從這裡拿掉，拖曳期間不重新產生刻度！
-            e.Handled = true;
         }
 
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            // 🌟 拖曳結束時，再把完美的刻度畫上去
             DrawRuler();
             e.Handled = true;
         }
+
+        private void MenuReset_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. 恢復尺身大小
+            RulerBody.Width = 600;
+            RulerBody.Height = 150;
+
+            // 2. 恢復變換矩陣 (旋轉歸零，移動到畫面中央附近)
+            currentRotation.Angle = 0;
+            currentTranslation.X = (SystemParameters.PrimaryScreenWidth - 600) / 2;
+            currentTranslation.Y = (SystemParameters.PrimaryScreenHeight - 150) / 2;
+
+            // 3. 恢復預設顏色與透明度 (30%)
+            RulerBody.Background = new SolidColorBrush(Color.FromArgb((byte)(255 * 0.7), 255, 255, 255));
+
+            // 4. 重設選單勾選狀態
+            MenuPosTop.IsChecked = true;
+            MenuPosBottom.IsChecked = MenuPosLeft.IsChecked = MenuPosRight.IsChecked = false;
+            posTop = true; posBottom = posLeft = posRight = false;
+    
+            // 5. 更新文字顯示並重畫刻度
+            UpdateTexts();
+            DrawRuler(); 
+}
     }
 }
